@@ -2,15 +2,23 @@
 {% block title %}Login {% endblock%}
 
 {% block main %}
+
+{% if error%}
+<div class="alert alert-danger" role="alert">
+  {{error}}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
     <form action="/login" method="POST" >
         <h1>Login</h1>
         <br>
             <div class="col">
-              <input type="text" class="form-control  mx-auto w-auto"  placeholder="Username" aria-label="Username">
+              <input type="text" class="form-control  mx-auto w-auto" name="username" placeholder="Username" aria-label="Username">
             </div>
             <br>
             <div >
-              <input type="password" class="form-control  mx-auto w-auto" placeholder="Password" aria-label="Password">
+              <input type="password" class="form-control  mx-auto w-auto" name="password" placeholder="Password" aria-label="Password">
             </div>
           </div>
           <br>
