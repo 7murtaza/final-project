@@ -12,6 +12,11 @@
         crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <title>{% block title %} - CS50 Certify{% endblock %}</title>
+    <link rel="shortcut icon" href="https://cs50.gallerycdn.vsassets.io/extensions/cs50/ddb50/1.1.2/1691002683906/Microsoft.VisualStudio.Services.Icons.Default" type="image/x-icon">
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" integrity="sha512-V3xRGsQMQ8CG4l2gVN44TCDmNY5cdlxbSvejrgmWxcLKHft0Q3XQDbeuJ9aot14mpNuRWGtI//WKraedDGNZ+g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 </head>
 
 <body>
@@ -54,6 +59,260 @@
         </div>
 
     </footer>
+
+    <!-- <script >
+        const verifyBtn = document.getElementById('verifyBtn');
+        const contractABI = [{
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "degreeHash",
+                "type": "bytes32"
+              },
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              }
+            ],
+            "name": "DegreeRevoked",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "degreeHash",
+                "type": "bytes32"
+              },
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "indexed": false,
+                "internalType": "string",
+                "name": "rollNo",
+                "type": "string"
+              },
+              {
+                "indexed": false,
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+              }
+            ],
+            "name": "DegreeUploaded",
+            "type": "event"
+          },
+          {
+            "inputs": [],
+            "name": "fee",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "bytes32",
+                "name": "degreeHash",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "string",
+                "name": "rollNo",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+              }
+            ],
+            "name": "uploadDegree",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function",
+            "payable": true
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "bytes32",
+                "name": "degreeHash",
+                "type": "bytes32"
+              }
+            ],
+            "name": "verifyDegree",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "payable",
+            "type": "function",
+            "payable": true
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "bytes32",
+                "name": "degreeHash",
+                "type": "bytes32"
+              }
+            ],
+            "name": "isDegreeExists",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "string",
+                "name": "rollNo",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+              }
+            ],
+            "name": "getDegreeHashByRollNumberAndName",
+            "outputs": [
+              {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "bytes32",
+                "name": "degreeHashData",
+                "type": "bytes32"
+              }
+            ],
+            "name": "revokeDegree",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          }];
+          const contractAddress = '0xDD0998c781c661c35fbFFa0dB86a40B3d2c181fF';
+          const smallFee = ethers.parseEther('0.001');
+      
+          const initializeContract = async () => {
+              try {
+                  const provider = new ethers.BrowserProvider(window.ethereum);
+                  await provider.send('eth_requestAccounts', []); // Ensure accounts are requested
+                  const signer = await provider.getSigner();
+                  return new ethers.Contract(contractAddress, contractABI, signer);
+              } catch (error) {
+                  alert('Error initializing contract. Ensure MetaMask is connected.');
+                  throw error;
+              }
+          };
+      
+          const checkMetaMask = async () => {
+              if (typeof window.ethereum !== 'undefined') {
+                  try {
+                      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                      return accounts.length > 0;
+                  } catch (error) {
+                      alert('MetaMask connection failed!');
+                      return false;
+                  }
+              } else {
+                  alert('MetaMask is not installed.');
+                  return false;
+              }
+          };
+      
+          const hashDegreeData = () => {
+              const name = document.getElementById('name').value.trim().toUpperCase();
+              const university = document.getElementById('university').value.trim().toUpperCase();
+              const degreeName = document.getElementById('degreeName').value.trim().toUpperCase();
+              const year = document.getElementById('year').value.trim().toUpperCase();
+              const rollNo = document.getElementById('rollNo').value.trim().toUpperCase();
+              const regNo = document.getElementById('regNo').value.trim().toUpperCase();
+      
+              if (!name || !university || !degreeName || !year || !rollNo || !regNo) {
+                  alert('All fields are required!');
+                  throw new Error('Validation Error: Missing input fields.');
+              }
+      
+              const data = `${name}${university}${degreeName}${year}${rollNo}${regNo}`;
+              return ethers.keccak256(ethers.toUtf8Bytes(data));
+          };
+      
+          verifyBtn.onclick = async () => {
+              try {
+                  const connected = await checkMetaMask();
+                  if (!connected) return;
+      
+                  const contract = await initializeContract();
+                  const degreeHash = hashDegreeData();
+      
+                  // Check if degree exists before verification
+                  const exists = await contract.isDegreeExists(degreeHash);
+      
+                  if (!exists) {
+                      alert('Degree has not been uploaded to the blockchain.');
+                      return;
+                  }
+      
+                  // Proceed with verification
+                  const tx = await contract.verifyDegree(degreeHash, { value: smallFee });
+                  const receipt = await tx.wait();
+      
+                  if (receipt.status === 1) { // Transaction success
+                      alert('Degree is verified on the blockchain.');
+                  } else {
+                      alert('Transaction failed during verification.');
+                  }
+              } catch (error) {
+                  console.error('Error:', error);
+                  alert('An error occurred during the verification process. Check console for details.');
+              }
+          };
+    </script> -->
+
+    
+    
+    {% block scripts%}
+
+
+    {% endblock%}
 
 </body>
 
