@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session, g
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_session import Session
 import sqlite3
+from web3 import Web3
 
 app = Flask(__name__)
 
@@ -10,6 +11,62 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 DATABASE = "database.db" 
+
+GANACHE_URL = 'http://127.0.0.1:7545'  # Ganache default RPC server
+CONTRACT_ADDRESS = '0x8d706AFdAccC1eb33a58d953C5FC50E314700A5B'  # Replace with your deployed contract address on Ganache
+ABI = []
+
+web3 = Web3(Web3.HTTPProvider(GANACHE_URL))
+contract = web3.eth.contract(address=Web3.to_checksum_address(CONTRACT_ADDRESS), abi=ABI)
+
+@app.route('/verify', methods=['GET', 'POST'])
+def verify_degree():
+    message = ""
+
+    if request.method == 'POST':
+        # MetaMask connection assumption
+        try:
+            user_account = web3.eth.accounts[0]  # Assuming MetaMask is connected and this is the account
+        except IndexError:
+            message = "MetaMask is not connected. Please connect MetaMask before proceeding."
+            return render_template('form.html', message=message)
+
+        # Form inputs
+        name = request.form.get('name').strip().upper()
+        university = request.form.get('university').strip().upper()
+        degree_name = request.form.get('degreeName').strip().upper()
+        year = request.form.get('year').strip().upper()
+        roll_no = request.form.get('rollNo').strip().upper()
+        reg_no = request.form.get('regNo').strip().upper()
+
+        # Hash the degree data
+        data = f"{name}{university}{degree_name}{year}{roll_no}{reg_no}"
+        degree_hash = web3.keccak(text=data).hex()
+
+        # Interact with the smart contract
+        try:
+            # Check if the degree exists
+            exists = contract.functions.isDegreeExists(degree_hash).call()
+
+            if exists:
+                # Verify the degree
+                tx = contract.functions.verifyDegree(degree_hash).transact({
+                    'from': user_account,
+                    'value': web3.to_wei(0.001, 'ether')  # Transaction fee
+                })
+                receipt = web3.eth.wait_for_transaction_receipt(tx)
+
+                if receipt['status'] == 1:
+                    message = "Degree is verified on the blockchain."
+                else:
+                    message = "Degree verification failed."
+            else:
+                message = "Degree has not been uploaded to the blockchain."
+        except Exception as e:
+            message = f"Error occurred: {str(e)}"
+
+    return render_template('verify.html')
+
 
 def get_db():
     if not hasattr(g, "db"):
@@ -80,6 +137,10 @@ def login():
 def logout():
     session.clear()
     return redirect("/")
+
+@app.route('/verify')
+def verify():
+    return render_template('verify.html')
 
 if __name__ == "__main__":
     app.run(debug=True)
